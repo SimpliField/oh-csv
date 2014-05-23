@@ -31,6 +31,7 @@
     "istanbul": "~0.2.4"
   },
   "dependencies": {
+    "escape-regexp-component": "^1.0.2",
     "readable-stream": "^1.0.27-1"
   }
 }
