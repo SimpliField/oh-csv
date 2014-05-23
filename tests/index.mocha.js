@@ -135,6 +135,29 @@ describe('csv encoder', function() {
         encoder.end();
       });
 
+      it('introducing exotic chars', function(done) {
+        var encoder = new csv.Encoder({
+          quotes: '~',
+          sep: 'é',
+          esc: '€',
+          linesep: 'à'
+        });
+        getStreamText(encoder, function(text) {
+          assert.equal(text,
+            '~1~é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' +
+            '~2~é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' +
+            '~3~é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' +
+            '~4~é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' 
+          );
+          done();
+        });
+        encoder.write([1, 't~u', 'péux', 'p€s', 'tàst']);
+        encoder.write([2, 't~u', 'péux', 'p€s', 'tàst']);
+        encoder.write([3, 't~u', 'péux', 'p€s', 'tàst']);
+        encoder.write([4, 't~u', 'péux', 'p€s', 'tàst']);
+        encoder.end();
+      });
+
     });
 
   });

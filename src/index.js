@@ -60,6 +60,7 @@ function checkOptions(options) {
   options.charsToEscape = (
     options.charsToEscape ||
     options.quotes.concat(options.sep).concat(options.linesep)
+      .concat(options.esc)
   ).filter(function(s) { return s; });
   return options;
 }
