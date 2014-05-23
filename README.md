@@ -10,6 +10,7 @@ var parser = new csv.Parser({
   fields: ['id', 'name', 'email'],
   sep: ',',
   esc: '\\',
+  quotes: '"',
   linesep: ['\n', '\r', '\r\n']
 });
 
@@ -27,6 +28,7 @@ var parser = new csv.Parser({
   fields: ['id', 'name', 'email'],
   sep: ',',
   esc: '\\',
+  quotes: '"',
   linesep: ['\n', '\r', '\r\n'],
   arrayMode: true
 });
