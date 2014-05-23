@@ -112,6 +112,28 @@ describe('csv encoder', function() {
 
     });
 
+    describe('should work with the CSV RFC config', function() {
+
+      it('with this input', function(done) {
+        var encoder = new csv.Encoder(csv.csvRFCOpts);
+        getStreamText(encoder, function(text) {
+          assert.equal(text,
+            '"1","tu","""peux""","pas","test"\r\n' +
+            '"2","tu","""peux""","pas","test"\r\n' +
+            '"3","tu","""peux""","pas","test"\r\n' +
+            '"4","tu","""peux""","pas","test"\r\n'
+          );
+          done();
+        });
+        encoder.write([1, 'tu', '"peux"', 'pas', 'test']);
+        encoder.write([2, 'tu', '"peux"', 'pas', 'test']);
+        encoder.write([3, 'tu', '"peux"', 'pas', 'test']);
+        encoder.write([4, 'tu', '"peux"', 'pas', 'test']);
+        encoder.end();
+      });
+
+    });
+
     describe('should work with custom config', function() {
 
       it('introducing quotes and unix new lines', function(done) {

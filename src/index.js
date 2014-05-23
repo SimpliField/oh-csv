@@ -7,15 +7,20 @@ var csvOpts = {
   sep: [','],
   esc: ['\\'],
   quotes: [''],
-  linesep: ['\r\n', '\n', '\r'],
-  charsEncoding: 'ascii'
+  linesep: ['\r\n', '\n', '\r']
 };
 var tsvOpts = {
   sep: ['\t'],
   esc: ['\\'],
   quotes: [''],
+  linesep: ['\r\n', '\n', '\r']
+};
+var csvRFCOpts = {
+  sep: [','],
+  esc: ['"'],
+  quotes: ['"'],
   linesep: ['\r\n', '\n', '\r'],
-  charsEncoding: 'ascii'
+  charsToEscape: ['"']
 };
 
 // CSV object
@@ -23,7 +28,8 @@ var csv = {
   Parser: CSVParser,
   Encoder: CSVEncoder,
   csvOpts: csvOpts,
-  tsvOpts: tsvOpts
+  tsvOpts: tsvOpts,
+  csvRFCOpts: csvRFCOpts
 };
 
 // Options integrity
