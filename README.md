@@ -1,11 +1,13 @@
-# CSV
-Simple and parametrable CSV parser and encoder.
+# OH - CSV
+Simple and parametrable CSV/TSV parser and encoder.
 
 ## Usage
 ```js
-var csv = require('badass-csv');
+var csv = require('oh-csv');
+```
 
-// Parsing CSV
+### Parsing CSV
+```js
 var parser = new csv.Parser({
   fields: ['id', 'name', 'email'],
   sep: ',',
@@ -22,8 +24,11 @@ parser.write('1,Nicolas Froidure,nicolas.froidure@simplifield.com');
 // }
 
 parser.end();
+```
 
-// Alternatively, you can use the array mode
+Alternatively, you can use the array mode:
+
+```js
 var parser = new csv.Parser({
   fields: ['id', 'name', 'email'],
   sep: ',',
@@ -37,14 +42,13 @@ parser.write('1,Nicolas Froidure,nicolas.froidure@simplifield.com');
 // [1, 'Nicolas Froidure', 'nicolas.froidure@simplifield.com']
 
 parser.end();
+```
 
+### Encoding to CSV
 
-// Reading CSV
+```js
 var encoder = new csv.Encoder({
-  fields: ['id', 'name', 'email'],
-  sep: ',',
-  esc: '\\',
-  linesep: ['\n', '\r', '\r\n']
+  fields: ['id', 'name', 'email']
 });
 
 encoder.pipe(process.stdout);
@@ -53,16 +57,20 @@ encoder.pipe(process.stdout);
 encoder.write([1, 'Nicolas Froidure', 'nicolas.froidure@simplifield.com']);
 // '1,Nicolas Froidure,nicolas.froidure@simplifield.com'
 
-// Object form
+// Object form (you need to specify fields)
 encoder.write({
   id:1,
   email: 'nicolas.froidure@simplifield.com',
   name: 'Nicolas Froidure'
 });
 // '1,Nicolas Froidure,nicolas.froidure@simplifield.com'
+```
 
+### Transforming row
 
-// Transforming (no library needed, DIY)
+No library needed, DIY !
+
+```js
 var Transform = require('stream').Transform;
 var transformer = new Transform({objectMode: true});
 transformer._transform = function(row, unused, cb) {
@@ -77,8 +85,6 @@ parser
 
 parser.write('1,Nicolas Froidure,nicolas.froidure@simplifield.com');
 // 1,nicolas froidure,nicolas.froidure@simplifield.com
-
-// Detecting fields (later)
 ```
 
 
