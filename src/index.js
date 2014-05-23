@@ -115,7 +115,6 @@ function CSVEncoder(options) {
     '(' + this.options.charsToEscape.map(escapeRegExpComponent).join('|') + ')',
     'gm'
   );
-  console.log(this._escRegExp);
 
 }
 
@@ -136,25 +135,15 @@ CSVEncoder.prototype._transform = function csvEncoderTransform(row, encoding, cb
     });
   }
   // Creating the chunk
-  if(null !== encoding) {
-    _self.push(new Buffer(
-      row.map(function(field) {
-        return (field+'').replace(
-          _self._escRegExp,
-          _self.options.esc[0] + '$1'
-        );
-      }).join(_self.options.sep[0]) + _self.options.linesep[0],
-      encoding
-    ));
-  } else {
-    row = row.reduce(function(buffers, buf) {
-      if(buffers.length) {
-        buffers.push(new Buffer(path.sep[0], _self.optionscharsEncoding));
-      }
-      buffers.push(buf);
-    }, []);
-    _self.push(Buffer.concat(row, row.length));
-  }
+  _self.push(new Buffer(
+    row.map(function(field) {
+      return (_self.options.quotes[0] || '') + (field+'').replace(
+        _self._escRegExp,
+        _self.options.esc[0] + '$1'
+      ) + (_self.options.quotes[0] || '');
+    }).join(_self.options.sep[0]) + _self.options.linesep[0],
+    encoding
+  ));
   cb();
 };
 

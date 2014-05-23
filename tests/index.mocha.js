@@ -112,6 +112,31 @@ describe('csv encoder', function() {
 
     });
 
+    describe('should work with custom config', function() {
+
+      it('introducing quotes and unix new lines', function(done) {
+        var encoder = new csv.Encoder({
+          quotes: '"',
+          linesep: '\n'
+        });
+        getStreamText(encoder, function(text) {
+          assert.equal(text,
+            '"1","\\"tu","peux","pas","test\\""\n' +
+            '"2","\\"tu","peux","pas","test\\""\n' +
+            '"3","\\"tu","peux","pas","test\\""\n' +
+            '"4","\\"tu","peux","pas","test\\""\n' 
+          );
+          done();
+        });
+        encoder.write([1, '"tu', 'peux', 'pas', 'test"']);
+        encoder.write([2, '"tu', 'peux', 'pas', 'test"']);
+        encoder.write([3, '"tu', 'peux', 'pas', 'test"']);
+        encoder.write([4, '"tu', 'peux', 'pas', 'test"']);
+        encoder.end();
+      });
+
+    });
+
   });
 
 });
