@@ -29,23 +29,44 @@ describe('csv parser', function() {
 
 describe('csv encoder', function() {
 
-  it('should work with simple input and csv config', function(done) {
-    var encoder = new csv.Encoder(csv.csvOpts);
-    getStreamText(encoder, function(text) {
-      console.log(text);
-      assert.equal(text,
-        '1,test1,another test1\n' +
-        '2,test2,another test2\n' +
-        '3,test3,another test3\n' +
-        '4,test4,another test4\n'
-      );
-      done();
-    })
-    encoder.write([1, 'test1', 'another test1']);
-    encoder.write([2, 'test2', 'another test2']);
-    encoder.write([3, 'test3', 'another test3']);
-    encoder.write([4, 'test4', 'another test4']);
-    encoder.end();
+  describe('with arrays', function() {
+
+    it('should work with simple input and csv config', function(done) {
+      var encoder = new csv.Encoder(csv.csvOpts);
+      getStreamText(encoder, function(text) {
+        assert.equal(text,
+          '1,test1,another test1\n' +
+          '2,test2,another test2\n' +
+          '3,test3,another test3\n' +
+          '4,test4,another test4\n'
+        );
+        done();
+      })
+      encoder.write([1, 'test1', 'another test1']);
+      encoder.write([2, 'test2', 'another test2']);
+      encoder.write([3, 'test3', 'another test3']);
+      encoder.write([4, 'test4', 'another test4']);
+      encoder.end();
+    });
+
+    it('should work with simple input and tsv config', function(done) {
+      var encoder = new csv.Encoder(csv.tsvOpts);
+      getStreamText(encoder, function(text) {
+        assert.equal(text,
+          '1\ttest1\tanother test1\n' +
+          '2\ttest2\tanother test2\n' +
+          '3\ttest3\tanother test3\n' +
+          '4\ttest4\tanother test4\n'
+        );
+        done();
+      })
+      encoder.write([1, 'test1', 'another test1']);
+      encoder.write([2, 'test2', 'another test2']);
+      encoder.write([3, 'test3', 'another test3']);
+      encoder.write([4, 'test4', 'another test4']);
+      encoder.end();
+    });
+
   });
 
 });
