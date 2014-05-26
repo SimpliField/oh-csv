@@ -3,6 +3,21 @@ var Stream = require('readable-stream');
 var csv = require('../src');
 
 // Tools
+function getStreamObjs(stream, cb) {
+  var objs = [];
+  stream.on('readable', function () {
+    var obj;
+    do {
+      obj = stream.read();
+      if(obj !== null) {
+        objs.push(obj);
+      }
+    } while(obj !== null);
+  });
+  stream.on('end', function () {
+    cb(objs);
+  });
+}
 function getStreamText(stream, cb) {
   var text = '';
   stream.on('readable', function () {
@@ -21,8 +36,133 @@ function getStreamText(stream, cb) {
 
 describe('csv parser', function() {
 
-  it('should work', function() {
-    assert(false);
+  describe('in array mode', function() {
+
+    it('should work for csv with single seps config', function(done) {
+        var parser = new csv.Parser({
+          esc: '\\',
+          sep: ',',
+          linesep: '\n'
+        });
+        getStreamObjs(parser, function(objs) {
+          assert.deepEqual(objs, [
+            [1, 'te,st1', 'anot,her test1'],
+            [2, 'te,st2', 'anot,her test2'],
+            [3, 'te,st3', 'anot,her test3'],
+            [4, 'te,st4', 'anot,her test4']
+          ]);
+          done();
+        });
+        parser.write('1,te\\,st1,anot\\,her test1\n');
+        parser.write('2,te\\,st2,anot\\,her test2\n');
+        parser.write('3,te\\,st3,anot\\,her test3\n');
+        parser.write('4,te\\,st4,anot\\,her test4\n');
+        parser.end();
+    });
+
+    it('should work for csv with csv config', function(done) {
+        var parser = new csv.Parser(csv.csvOpts);
+        getStreamObjs(parser, function(objs) {
+          assert.deepEqual(objs, [
+            [1, 'test1', 'another test1'],
+            [2, 'test2', 'another test2'],
+            [3, 'test3', 'another test3'],
+            [4, 'test4', 'another test4']
+          ]);
+          done();
+        });
+        parser.write('1,test1,another test1\r\n');
+        parser.write('2,test2,another test2\r\n');
+        parser.write('3,test3,another test3\r\n');
+        parser.write('4,test4,another test4\r\n');
+        parser.end();
+    });
+
+    it('should work for tsv with tsv config', function(done) {
+        var parser = new csv.Parser(csv.tsvOpts);
+        getStreamObjs(parser, function(objs) {
+          assert.deepEqual(objs, [
+            [1, 'test1', 'another test1'],
+            [2, 'test2', 'another test2'],
+            [3, 'test3', 'another test3'],
+            [4, 'test4', 'another test4']
+          ]);
+          done();
+        });
+        parser.write('1\ttest1\tanother test1\r\n');
+        parser.write('2\ttest2\tanother test2\n');
+        parser.write('3\ttest3\tanother test3\r\n');
+        parser.write('4\ttest4\tanother test4\n');
+        parser.end();
+    });
+
+    it('should work for csv with RFC csv config', function(done) {
+        var parser = new csv.Parser(csv.csvRFCOpts);
+        getStreamObjs(parser, function(objs) {
+          assert.deepEqual(objs, [
+            [1, 'test1', 'another test1'],
+            [2, 'test2', 'another test2'],
+            [3, 'test3', 'another test3'],
+            [4, 'test4', 'another test4']
+          ]);
+          done();
+        });
+        parser.write('1,test1,another test1\r\n');
+        parser.write('2,test2,another test2\r\n');
+        parser.write('3,test3,another test3\r\n');
+        parser.write('4,test4,another test4\r\n');
+        parser.end();
+    });
+
+    it('should work for csv with csv config and quotes', function(done) {
+        var parser = new csv.Parser(csv.csvQuotOpts);
+        getStreamObjs(parser, function(objs) {
+          assert.deepEqual(objs, [
+            [1, 'test1', 'an "other" test1'],
+            [2, 'test2', 'an "other" test2'],
+            [3, 'test3', 'an "other" test3'],
+            [4, 'test4', 'an "other" test4']
+          ]);
+          done();
+        });
+        parser.write('1,"test1","an \\"other\\" test1"\r\n');
+        parser.write('2,"test2","an \\"other\\" test2"\r\n');
+        parser.write('3,"test3","an \\"other\\" test3"\r\n');
+        parser.write('4,"test4","an \\"other\\" test4"\r\n');
+        parser.end();
+    });
+
+    it('should work for csv with RFC csv config and quotes', function(done) {
+        var parser = new csv.Parser(csv.csvRFCOpts);
+        getStreamObjs(parser, function(objs) {
+          assert.deepEqual(objs, [
+            [1, 'test1', 'an "other" test1'],
+            [2, 'test2', 'an "other" test2'],
+            [3, 'test3', 'an "other" test3'],
+            [4, 'test4', 'an "other" test4']
+          ]);
+          done();
+        });
+        parser.write('1,"test1","an ""other"" test1"\r\n');
+        parser.write('2,"test2","an ""other"" test2"\r\n');
+        parser.write('3,"test3","an ""other"" test3"\r\n');
+        parser.write('4,"test4","an ""other"" test4"\r\n');
+        parser.end();
+    });
+
+    it('should fail when a quoted field isn\'t closed', function(done) {
+      var parser = new csv.Parser(csv.csvRFCOpts);
+      parser.on('error', function(err) {
+        assert.equal(err.message, 'Unclosed field detected.');
+        done();
+      });
+      parser.write('1,"test1","an ""other"" test1\r\n');
+      parser.write('2,test2,an other test2\r\n');
+      parser.write('3,test3,an other test3\r\n');
+      parser.write('4,test4,an other test4\r\n');
+      parser.end();
+    });
+
   });
 
 });
