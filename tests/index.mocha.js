@@ -150,6 +150,24 @@ describe('csv parser', function() {
         parser.end();
     });
 
+    it('should work for csv with RFC csv config and quotes but no trailing rn', function(done) {
+        var parser = new csv.Parser(csv.csvRFCOpts);
+        getStreamObjs(parser, function(objs) {
+          assert.deepEqual(objs, [
+            [1, 'test1', 'an "other" test1'],
+            [2, 'test2', 'an "other" test2'],
+            [3, 'test3', 'an "other" test3'],
+            [4, 'test4', 'an "other" test4']
+          ]);
+          done();
+        });
+        parser.write('1,"test1","an ""other"" test1"\r\n');
+        parser.write('2,"test2","an ""other"" test2"\r\n');
+        parser.write('3,"test3","an ""other"" test3"\r\n');
+        parser.write('4,"test4","an ""other"" test4"');
+        parser.end();
+    });
+
     it('should fail when a quoted field isn\'t closed', function(done) {
       var parser = new csv.Parser(csv.csvRFCOpts);
       parser.on('error', function(err) {
@@ -158,6 +176,21 @@ describe('csv parser', function() {
       });
       parser.write('1,"test1","an ""other"" test1\r\n');
       parser.write('2,test2,an other test2\r\n');
+      parser.write('3,test3,an other test3\r\n');
+      parser.write('4,test4,an other test4\r\n');
+      parser.end();
+    });
+
+    it('should fail when a quoted field is closed with another quote than the one that opened it', function(done) {
+      var parser = new csv.Parser({
+        quotes:['"','\'']
+      });
+      parser.on('error', function(err) {
+        assert.equal(err.message, 'Unclosed field detected.');
+        done();
+      });
+      parser.write('1,"test1","an ""other"" test1\r\n');
+      parser.write('2,"test2\',an other test2\r\n');
       parser.write('3,test3,an other test3\r\n');
       parser.write('4,test4,an other test4\r\n');
       parser.end();
