@@ -106,7 +106,8 @@ function CSVParser(options) {
   this._escState = '';
   this._escChars = '';
   this._discardEsc = false;
-  this._quotState = '';
+  this._startQuotState = '';
+  this._endQuotState = '';
   this._currentRow = [];
   this._currentField = '';
   this.lineNum = 1;
@@ -137,26 +138,26 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
     this.charNum++;
     // Looking for quoted fields start if quotes in options
     if(_self.options.quotes.length && '' == _self._currentField) {
-      matches = getSeparatorMatches(_self.options.quotes, _self._quotState + string[i]);
+      matches = getSeparatorMatches(_self.options.quotes, _self._startQuotState + string[i]);
       if(matches.length) {
-        _self._quotState += string[i];
+        _self._startQuotState += string[i];
         _self._parsingState |= CSVParser.STATE_QUOTE_START;
         continue;
       }
       if(_self._parsingState&CSVParser.STATE_QUOTE_START) {
         _self._parsingState ^= CSVParser.STATE_QUOTE_START;
-        matches = getSeparatorMatches(_self.options.quotes, _self._quotState);
+        matches = getSeparatorMatches(_self.options.quotes, _self._startQuotState);
         if(matches.length) {
           _self._parsingState |= CSVParser.STATE_FIELD_QUOTED;
           i--;
         } else {
           // Got an invalid quote char, reinjecting to the string
-          i = i - _self._quotState.length - 1;
+          i = i - _self._startQuotState.length - 1;
           if(i  < 0) {
-            string = _self._quotState.substr(0, -i) + string;
+            string = _self._startQuotState.substr(0, -i) + string;
+            i = -1;
           }
         }
-        _self._quotState = '';
         continue;
       }
     }
@@ -183,6 +184,7 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
           i = i - _self._escState.length - _self._escChars.length - 1;
           if(i  < 0) {
             string = (_self._escState + _self._escChars).substr(0, -i) + string;
+            i = -1;
           }
         }
         _self._escState = '';
@@ -215,6 +217,7 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
           i = i - _self._escState.length - 1;
           if(i  < 0) {
             string = _self._escState.substr(0, -i) + string;
+            i = -1;
           }
         }
         continue;
@@ -222,27 +225,27 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
     }
     // Looking for quoted fields contents and end
     if(_self._parsingState&CSVParser.STATE_FIELD_QUOTED) {
-      matches = getSeparatorMatches(_self.options.quotes, _self._quotState + string[i]);
-      if(matches.length) {
-        _self._quotState += string[i];
+      if(0 === _self._startQuotState.indexOf(_self._endQuotState + string[i])) {
+        _self._endQuotState += string[i];
         _self._parsingState |= CSVParser.STATE_QUOTE_END;
         continue;
       }
       if(_self._parsingState&CSVParser.STATE_QUOTE_END) {
-        matches = getSeparatorMatches(_self.options.quotes, _self._quotState);
         // Got a valid quote char
-        if(matches.length) {
+        if(_self._startQuotState == _self._endQuotState) {
           _self._parsingState ^= CSVParser.STATE_QUOTE_END;
           _self._parsingState ^= CSVParser.STATE_FIELD_QUOTED;
           i--;
         } else {
           // Got an invalid quote char, reinjecting to the string
-          i = i - _self._quotState.length - 1;
+          i = i - _self._endQuotState.length - 1;
           if(i  < 0) {
-            string = _self._quotState.substr(0, -i) + string;
+            string = _self._endQuotState.substr(0, -i) + string;
+            i = -1;
           }
         }
-        _self._quotState = '';
+        _self._endQuotState = '';
+        _self._startQuotState = '';
         continue;
       }
       if(_self._parsingState&CSVParser.STATE_FIELD_QUOTED) {
@@ -264,10 +267,14 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
       _self._lnSep = '';
       if(matches.length) {
         // Got a valid line char
-        _self._currentRow.push(_self._currentField);
-        _self._currentField = '';
-        _self.push(_self._currentRow);
-        _self._currentRow = [];
+        if('' != _self._currentField) {
+          _self._currentRow.push(_self._currentField);
+          _self._currentField = '';
+        }
+        if(_self._currentRow.length) {
+          _self.push(_self._currentRow);
+          _self._currentRow = [];
+        }
         this.lineNum++;
         this.charNum = 0;
         i--;
@@ -276,6 +283,7 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
         i = i - _self._lnSep.length - 1;
         if(i  < 0) {
           string = _self._lnSep.substr(0, -i) + string;
+          i = -1;
         }
       }
       continue;
@@ -301,6 +309,7 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
         i = i - _self._fSep.length - 1;
         if(i  < 0) {
           string = _self._fSep.substr(0, -i) + string;
+          i = -1;
         }
       }
       _self._fSep = '';
@@ -312,20 +321,25 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
       continue;
     }
     // LINE
-    this.emit('error', new Error('Unexpected char "'+string[i]+'".'));
+    if('\u0000' != string[i]) {
+      this.emit('error', new Error('Unexpected char "'+string[i]+'".'));
+    }
   }
   cb();
 };
 
 CSVParser.prototype._flush = function csvParserFlush(cb) {
+  // Append a new line
+  this._transform(new Buffer(this.options.linesep[0]+this.options.linesep[0]), 'buffer', cb);
   // Fail if a quoted field hasn't been closed
   if(this._parsingState&CSVParser.STATE_FIELD_QUOTED) {
     this.emit('error', new Error('Unclosed field detected.'));
   }
+  /*/ 
   // Should push back trailing chars
   this._currentRow.push(this._currentField);
   this.push(this._currentRow);
-  cb();
+  cb();*/
 };
 
 // Helpers
