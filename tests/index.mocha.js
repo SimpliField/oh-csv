@@ -288,6 +288,28 @@ describe('csv parser', function() {
 
   });
 
+  it('should work when new wasn\'t used', function() {
+    assert.throws(function() {
+      csv.Parser() instanceof csv.Parser;
+    })
+  });
+
+  it('should fail with no linesep is given', function() {
+    assert.throws(function() {
+      new csv.Parser({
+        linesep:[]
+      });
+    })
+  });
+
+  it('should fail with no field sep is given', function() {
+    assert.throws(function() {
+      new csv.Parser({
+        sep:[]
+      });
+    })
+  });
+
 });
 
 describe('csv encoder', function() {
@@ -463,6 +485,12 @@ describe('csv encoder', function() {
 
     });
 
+  });
+
+  it('should work when new wasn\'t used', function() {
+    assert.throws(function() {
+      csv.Encoder() instanceof csv.Encoder;
+    })
   });
 
 });
