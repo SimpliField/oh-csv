@@ -41,6 +41,7 @@ var csv = {
 
 // Options integrity
 function checkOptions(options) {
+  options = options || {};
   // Required
   if(options.sep && 'string' === typeof options.sep) {
     options.sep = [options.sep];

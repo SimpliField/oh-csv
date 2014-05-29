@@ -289,7 +289,7 @@ describe('csv parser', function() {
   });
 
   it('should work when new wasn\'t used', function() {
-    assert.throws(function() {
+    assert.doesNotThrow(function() {
       csv.Parser() instanceof csv.Parser;
     })
   });
@@ -369,6 +369,42 @@ describe('csv encoder', function() {
         encoder.write([2, 'te,st2', 'ano,ther ,test2']);
         encoder.write([3, 'te,st3', 'ano,ther ,test3']);
         encoder.write([4, 'te,st4', 'ano,ther ,test4']);
+        encoder.end();
+      });
+
+      it('in object mode', function(done) {
+        var encoder = new csv.Encoder({
+          fields: ['id', 'label', 'description']
+        });
+        getStreamText(encoder, function(text) {
+          assert.equal(text,
+            '1,te\\,st1,ano\\,ther \\,test1\r\n' +
+            '2,te\\,st2,ano\\,ther \\,test2\r\n' +
+            '3,te\\,st3,ano\\,ther \\,test3\r\n' +
+            '4,te\\,st4,ano\\,ther \\,test4\r\n'
+          );
+          done();
+        });
+        encoder.write({
+          id: 1,
+          label: 'te,st1',
+          description: 'ano,ther ,test1'
+        });
+        encoder.write({
+          id: 2,
+          label: 'te,st2',
+          description: 'ano,ther ,test2'
+        });
+        encoder.write({
+          id: 3,
+          label: 'te,st3',
+          description: 'ano,ther ,test3'
+        });
+        encoder.write({
+          id: 4,
+          label: 'te,st4',
+          description: 'ano,ther ,test4'
+        });
         encoder.end();
       });
 
@@ -488,8 +524,18 @@ describe('csv encoder', function() {
   });
 
   it('should work when new wasn\'t used', function() {
-    assert.throws(function() {
+    assert.doesNotThrow(function() {
       csv.Encoder() instanceof csv.Encoder;
+    })
+  });
+
+  it('should fail with objects when no fields were given', function() {
+    var encoder = new csv.Encoder();
+    assert.throws(function() {
+      encoder.write({
+        id:1,
+        label: 'test'
+      });
     })
   });
 
