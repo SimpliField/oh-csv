@@ -139,8 +139,6 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
   var _self = this;
   var string = chunk.toString();
   var matches;
-  var index;
-  var n;
   var curChar;
 
   for(var i=0; i<string.length; i++) {
@@ -398,7 +396,6 @@ util.inherits(CSVEncoder, Stream.Transform);
 
 // Implement _transform underlying function
 CSVEncoder.prototype._transform = function csvEncoderTransform(row, encoding, cb) {
-  var chunk;
   var _self = this;
   // Flattening objects
   if(!(row instanceof Array)) {

@@ -123,22 +123,27 @@ The options object is meant to be usable either with the Parser and the Encoder.
 
 #### options.sep:Array
 Default: `[',']`
+
 The strings used for separating values. The first string is used to encode CSV.
 
 #### options.linesep:Array
 Default: `['\r\n', '\r', '\n']`
+
 The strings used for separating lines. The first string is used to encode CSV.
 
 #### options.quote:Array
 Default: `['"']`
+
 The strings used for quoting values. The first string is used to encode CSV.
 
 #### options.esc:Array
 Default: `['\\']`
+
 The strings used for escaping special chars. The first string is used to encode CSV.
 
 #### options.toEsc:Array
 Default: An array containing `options.sep`, `options.linesep`, `options.quote`
  and `options.esc` strings.
+
 The strings that must be escaped.
 
