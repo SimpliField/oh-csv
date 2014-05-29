@@ -6,27 +6,27 @@ var escapeRegExpComponent = require('escape-regexp-component');
 var csvOpts = {
   sep: [','],
   esc: ['\\'],
-  quotes: [''],
+  quote: [''],
   linesep: ['\r\n', '\n', '\r']
 };
 var csvQuotOpts = {
   sep: [','],
-  esc: ['\\'],
-  quotes: ['"'],
-  linesep: ['\r\n', '\n', '\r']
+  linesep: ['\r\n', '\n', '\r'],
+  quote: ['"'],
+  esc: ['\\']
 };
 var tsvOpts = {
   sep: ['\t'],
-  esc: ['\\'],
-  quotes: [''],
-  linesep: ['\r\n', '\n', '\r']
+  linesep: ['\r\n', '\n', '\r'],
+  quote: [''],
+  esc: ['\\']
 };
 var csvRFCOpts = {
   sep: [','],
-  esc: ['"'],
-  quotes: ['"'],
   linesep: ['\r\n', '\n', '\r'],
-  charsToEscape: ['"']
+  quote: ['"'],
+  esc: ['"'],
+  toEsc: ['"']
 };
 
 // CSV object
@@ -65,14 +65,14 @@ function checkOptions(options) {
   } else {
     options.esc = options.esc || csvOpts.esc;
   }
-  if(options.quotes && 'string' === typeof options.quotes) {
-    options.quotes = [options.quotes];
+  if(options.quote && 'string' === typeof options.quote) {
+    options.quote = [options.quote];
   } else {
-    options.quotes = options.quotes || [];
+    options.quote = options.quote || [];
   }
-  options.charsToEscape = (
-    options.charsToEscape ||
-    options.quotes.concat(options.sep).concat(options.linesep)
+  options.toEsc = (
+    options.toEsc ||
+    options.quote.concat(options.sep).concat(options.linesep)
       .concat(options.esc)
   ).filter(function(s) { return s; });
   return options;
@@ -137,8 +137,8 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
   for(var i=0; i<string.length; i++) {
     this.charNum++;
     // Looking for quoted fields start if quotes in options
-    if(_self.options.quotes.length && '' == _self._currentField) {
-      matches = getSeparatorMatches(_self.options.quotes, _self._startQuotState + string[i]);
+    if(_self.options.quote.length && '' == _self._currentField) {
+      matches = getSeparatorMatches(_self.options.quote, _self._startQuotState + string[i]);
       if(matches.length) {
         _self._startQuotState += string[i];
         _self._parsingState |= CSVParser.STATE_QUOTE_START;
@@ -146,7 +146,7 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
       }
       if(_self._parsingState&CSVParser.STATE_QUOTE_START) {
         _self._parsingState ^= CSVParser.STATE_QUOTE_START;
-        matches = getSeparatorMatches(_self.options.quotes, _self._startQuotState);
+        matches = getSeparatorMatches(_self.options.quote, _self._startQuotState);
         if(matches.length) {
           _self._parsingState |= CSVParser.STATE_FIELD_QUOTED;
           i--;
@@ -162,15 +162,15 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
       }
     }
     // Treating escapes (if some escape chars and no separator currently parsed)
-    if(_self.options.esc.length && _self.options.charsToEscape.length) {
+    if(_self.options.esc.length && _self.options.toEsc.length) {
       // Checking for escaped chars
       if(_self._parsingState&CSVParser.STATE_ESC_CNT) {
-        matches = getSeparatorMatches(_self.options.charsToEscape, _self._escChars + string[i]);
+        matches = getSeparatorMatches(_self.options.toEsc, _self._escChars + string[i]);
         if(matches.length) {
           _self._escChars += string[i];
           continue;
         }
-        matches = getSeparatorMatches(_self.options.charsToEscape, _self._escChars);
+        matches = getSeparatorMatches(_self.options.toEsc, _self._escChars);
         _self._parsingState ^= CSVParser.STATE_ESC;
         _self._parsingState ^= CSVParser.STATE_ESC_CNT;
         // Got a valid escape char
@@ -329,17 +329,15 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
 };
 
 CSVParser.prototype._flush = function csvParserFlush(cb) {
+  var _self = this;
   // Append a new line
-  this._transform(new Buffer(this.options.linesep[0]+this.options.linesep[0]), 'buffer', cb);
+  this._transform(new Buffer(this.options.linesep[0]+this.options.linesep[0]), 'buffer', function() {
   // Fail if a quoted field hasn't been closed
-  if(this._parsingState&CSVParser.STATE_FIELD_QUOTED) {
-    this.emit('error', new Error('Unclosed field detected.'));
-  }
-  /*/ 
-  // Should push back trailing chars
-  this._currentRow.push(this._currentField);
-  this.push(this._currentRow);
-  cb();*/
+    if(_self._parsingState&CSVParser.STATE_FIELD_QUOTED) {
+      _self.emit('error', new Error('Unclosed field detected.'));
+    }
+    cb();
+  });
 };
 
 // Helpers
@@ -371,7 +369,7 @@ function CSVEncoder(options) {
 
   // Build the escape search regular expression
   this._escRegExp = new RegExp(
-    '(' + this.options.charsToEscape.map(escapeRegExpComponent).join('|') + ')',
+    '(' + this.options.toEsc.map(escapeRegExpComponent).join('|') + ')',
     'gm'
   );
 
@@ -396,10 +394,10 @@ CSVEncoder.prototype._transform = function csvEncoderTransform(row, encoding, cb
   // Creating the chunk
   _self.push(new Buffer(
     row.map(function(field) {
-      return (_self.options.quotes[0] || '') + (field+'').replace(
+      return (_self.options.quote[0] || '') + (field+'').replace(
         _self._escRegExp,
         _self.options.esc[0] + '$1'
-      ) + (_self.options.quotes[0] || '');
+      ) + (_self.options.quote[0] || '');
     }).join(_self.options.sep[0]) + _self.options.linesep[0],
     encoding
   ));

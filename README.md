@@ -7,13 +7,29 @@ var csv = require('oh-csv');
 ```
 
 ### Parsing CSV
+
 ```js
 var parser = new csv.Parser({
-  fields: ['id', 'name', 'email'],
   sep: ',',
-  esc: '\\',
+  linesep: ['\n', '\r', '\r\n'],
   quotes: '"',
-  linesep: ['\n', '\r', '\r\n']
+  esc: '\\'
+});
+
+parser.write('1,Nicolas Froidure,nicolas.froidure@simplifield.com');
+// [1, 'Nicolas Froidure', 'nicolas.froidure@simplifield.com']
+
+parser.end();
+```
+
+Alternatively, you can specify fields to map them to an object properties:
+```js
+var parser = new csv.Parser({
+  fields: ['id', 'name', 'email'], // fields are required for this mode
+  sep: ',',
+  linesep: ['\n', '\r', '\r\n'],
+  quotes: '"',
+  esc: '\\'
 });
 
 parser.write('1,Nicolas Froidure,nicolas.froidure@simplifield.com');
@@ -22,24 +38,6 @@ parser.write('1,Nicolas Froidure,nicolas.froidure@simplifield.com');
 //  name: 'Nicolas Froidure',
 //  email: 'nicolas.froidure@simplifield.com'
 // }
-
-parser.end();
-```
-
-Alternatively, you can use the array mode:
-
-```js
-var parser = new csv.Parser({
-  fields: ['id', 'name', 'email'],
-  sep: ',',
-  esc: '\\',
-  quotes: '"',
-  linesep: ['\n', '\r', '\r\n'],
-  arrayMode: true
-});
-
-parser.write('1,Nicolas Froidure,nicolas.froidure@simplifield.com');
-// [1, 'Nicolas Froidure', 'nicolas.froidure@simplifield.com']
 
 parser.end();
 ```
@@ -72,7 +70,7 @@ No library needed, DIY !
 
 ```js
 var Transform = require('stream').Transform;
-var transformer = new Transform({objectMode: true});
+var transformer = new Transform({arrayMode: false});
 transformer._transform = function(row, unused, cb) {
   row[name] = row[name].toLowerCase();
   this.push(row);
@@ -88,13 +86,14 @@ parser.write('1,Nicolas Froidure,nicolas.froidure@simplifield.com');
 ```
 
 ### Predefined options
-There are CSV and TSV predefined objects in order to allow you tu just choose
- your format
+There are some CSV and TSV predefined objects in order to allow you tu just
+ easily choose your format.
 
 
 #### csv.csvOpts
 
 [CSV (Comma-Separated Values)](http://en.wikipedia.org/wiki/Comma-separated_values)
+ as it's commonly found.
 
 #### csv.tsvOpts
 
@@ -103,3 +102,41 @@ There are CSV and TSV predefined objects in order to allow you tu just choose
 #### csv.csvRFCOpts
 
 The [RFC 4180](http://tools.ietf.org/html/rfc4180) CSV format.
+
+## API
+
+### csv.Parser(options:Object)
+
+Create a new CSV Parser transform stream with `options` as defined in the
+ options section.
+
+### csv.Encoder(options:Object)
+
+Create a new CSV Encoder transform stream with `options` as defined in
+ the options section.
+
+### Options
+
+The options object is meant to be usable either with the Parser and the Encoder.
+
+#### options.sep:Array
+Default: `[',']`
+The strings used for separating values. The first string is used to encode CSV.
+
+#### options.linesep:Array
+Default: `['\r\n', '\r', '\n']`
+The strings used for separating lines. The first string is used to encode CSV.
+
+#### options.quote:Array
+Default: `['"']`
+The strings used for quoting values. The first string is used to encode CSV.
+
+#### options.esc:Array
+Default: `['\\']`
+The strings used for escaping special chars. The first string is used to encode CSV.
+
+#### options.toEsc:Array
+Default: An array containing `options.sep`, `options.linesep`, `options.quote`
+ and `options.esc` strings.
+The strings that must be escaped.
+

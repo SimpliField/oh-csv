@@ -219,7 +219,7 @@ describe('csv parser', function() {
 
     it('should fail when a quoted field is closed with another quote than the one that opened it', function(done) {
       var parser = new csv.Parser({
-        quotes:['"','\'']
+        quote:['"','\'']
       });
       parser.on('error', function(err) {
         assert.equal(err.message, 'Unclosed field detected.');
@@ -365,7 +365,7 @@ describe('csv encoder', function() {
 
       it('introducing quotes and unix new lines', function(done) {
         var encoder = new csv.Encoder({
-          quotes: '"',
+          quote: '"',
           linesep: '\n'
         });
         getStreamText(encoder, function(text) {
@@ -386,7 +386,7 @@ describe('csv encoder', function() {
 
       it('introducing exotic chars', function(done) {
         var encoder = new csv.Encoder({
-          quotes: '~',
+          quote: '~',
           sep: 'é',
           esc: '€',
           linesep: 'à'
