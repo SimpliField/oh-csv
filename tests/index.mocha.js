@@ -150,6 +150,29 @@ describe('csv parser', function() {
         parser.end();
     });
 
+    it('should work with multichars config', function(done) {
+        var parser = new csv.Parser({
+          linesep: 'aaaa',
+          sep: 'bbbb',
+          esc: 'cccc',
+          quot: 'dddd'
+        });
+        getStreamObjs(parser, function(objs) {
+          assert.deepEqual(objs, [
+            [1, 'test1', 'anobbther test1'],
+            [2, 'test2', 'anobbbbther test2'],
+            [3, 'test3', 'anobbther test3'],
+            [4, 'test4', 'anobbbbther test4']
+          ]);
+          done();
+        });
+        parser.write('1bbbbtest1bbbbanobbther test1aaaa');
+        parser.write('2bbbbtest2bbbbanoccccbbbbther test2aaaa');
+        parser.write('3bbbbtest3bbbbanobbther test3aaaa');
+        parser.write('4bbbbtest4bbbbanoccccbbbbther test4aaaa');
+        parser.end();
+    });
+
     it('should work for csv when fields are given', function(done) {
         var parser = new csv.Parser({
           fields: ['id', 'label', 'description']

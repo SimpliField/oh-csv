@@ -102,14 +102,20 @@ function CSVParser(options) {
   // Parsing states
   this._parsingState = CSVParser.STATE_FIELD;
   this._lnSep = '';
+  this._discardLn = false;
   this._fSep = '';
+  this._discardFSep = false;
   this._escState = '';
   this._escChars = '';
   this._discardEsc = false;
   this._startQuotState = '';
+  this._discardStartQuote = false;
   this._endQuotState = '';
+  this._discardEndQuot = false;
+  // Row/fields states
   this._currentRow = [];
   this._currentField = '';
+  // Parser state
   this.lineNum = 1;
   this.charNum = 0;
 }
@@ -132,22 +138,26 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
   var _self = this;
   var string = chunk.toString();
   var matches;
+  var index;
   var n;
+  var curChar;
 
   for(var i=0; i<string.length; i++) {
+    curChar = string[i];
     this.charNum++;
     // Looking for quoted fields start if quotes in options
-    if(_self.options.quote.length && '' == _self._currentField) {
-      matches = getSeparatorMatches(_self.options.quote, _self._startQuotState + string[i]);
+    if(_self.options.quote.length && '' == _self._currentField &&
+      !_self._discardStartQuote) {
+      matches = getSeparatorMatches(_self.options.quote, _self._startQuotState + curChar);
       if(matches.length) {
-        _self._startQuotState += string[i];
+        _self._startQuotState += curChar;
         _self._parsingState |= CSVParser.STATE_QUOTE_START;
         continue;
       }
+      this._discardStartQuote = false;
       if(_self._parsingState&CSVParser.STATE_QUOTE_START) {
         _self._parsingState ^= CSVParser.STATE_QUOTE_START;
-        matches = getSeparatorMatches(_self.options.quote, _self._startQuotState);
-        if(matches.length) {
+        if(-1 !== _self.options.quote.indexOf(_self._startQuotState)) {
           _self._parsingState |= CSVParser.STATE_FIELD_QUOTED;
           i--;
         } else {
@@ -157,6 +167,7 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
             string = _self._startQuotState.substr(0, -i) + string;
             i = -1;
           }
+          this._discardStartQuote = true;
         }
         continue;
       }
@@ -165,16 +176,15 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
     if(_self.options.esc.length && _self.options.toEsc.length) {
       // Checking for escaped chars
       if(_self._parsingState&CSVParser.STATE_ESC_CNT) {
-        matches = getSeparatorMatches(_self.options.toEsc, _self._escChars + string[i]);
+        matches = getSeparatorMatches(_self.options.toEsc, _self._escChars + curChar);
         if(matches.length) {
-          _self._escChars += string[i];
+          _self._escChars += curChar;
           continue;
         }
-        matches = getSeparatorMatches(_self.options.toEsc, _self._escChars);
         _self._parsingState ^= CSVParser.STATE_ESC;
         _self._parsingState ^= CSVParser.STATE_ESC_CNT;
         // Got a valid escape char
-        if(matches.length) {
+        if(-1 !== _self.options.toEsc.indexOf(_self._escChars)) {
           _self._currentField += _self._escChars;
           i--;
         } else {
@@ -198,18 +208,17 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
           _self._parsingState&CSVParser.STATE_QUOTE_START ||
           _self._parsingState&CSVParser.STATE_QUOTE_END
         )) {
-        matches = getSeparatorMatches(_self.options.esc, _self._escState + string[i]);
+        matches = getSeparatorMatches(_self.options.esc, _self._escState + curChar);
         if(matches.length) {
-          _self._escState += string[i];
+          _self._escState += curChar;
           _self._parsingState |= CSVParser.STATE_ESC;
           continue;
         }
       }
       _self._discardEsc = false   ;
       if(_self._parsingState&CSVParser.STATE_ESC) {
-        matches = getSeparatorMatches(_self.options.esc, _self._escState);
         // Got a valid escape char
-        if(matches.length) {
+        if(-1 !== _self.options.esc.indexOf(_self._escState)) {
           _self._parsingState |= CSVParser.STATE_ESC_CNT;
           i--;
         // Got an invalid escape char, reinjecting to the string
@@ -224,9 +233,9 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
       }
     }
     // Looking for quoted fields contents and end
-    if(_self._parsingState&CSVParser.STATE_FIELD_QUOTED) {
-      if(0 === _self._startQuotState.indexOf(_self._endQuotState + string[i])) {
-        _self._endQuotState += string[i];
+    if(_self._parsingState&CSVParser.STATE_FIELD_QUOTED && !this._discardEndQuot) {
+      if(0 === _self._startQuotState.indexOf(_self._endQuotState + curChar)) {
+        _self._endQuotState += curChar;
         _self._parsingState |= CSVParser.STATE_QUOTE_END;
         continue;
       }
@@ -243,29 +252,62 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
             string = _self._endQuotState.substr(0, -i) + string;
             i = -1;
           }
+          this._discardEndQuot = true;
         }
         _self._endQuotState = '';
         _self._startQuotState = '';
         continue;
       }
       if(_self._parsingState&CSVParser.STATE_FIELD_QUOTED) {
-        _self._currentField += string[i];
+        _self._currentField += curChar;
         continue;
       }
     }
-    // Detecting new lines start
-    matches = getSeparatorMatches(_self.options.linesep, _self._lnSep + string[i]);
-    if(matches.length) {
-      _self._lnSep += string[i];
-      _self._parsingState |= CSVParser.STATE_LNSEP;
+    this._discardEndQuot = false;
+    // Detecting new field start
+    if(!this._discardFSep) {
+      matches = getSeparatorMatches(_self.options.sep, _self._fSep + curChar);
+      if(matches.length) {
+        _self._fSep += curChar;
+        _self._parsingState |= CSVParser.STATE_FSEP;
+        continue;
+      }
+    }
+    this._discardFSep = false;
+    // STATE_FSEP : We are waiting for some more field separators chars
+    if(_self._parsingState&CSVParser.STATE_FSEP) {
+      _self._parsingState ^= CSVParser.STATE_FSEP;
+      if(-1 !== _self.options.sep.indexOf(_self._fSep)) {
+        // Got a valid separator char
+        _self._currentRow.push(_self._currentField);
+        _self._currentField = '';
+        i--;
+      } else {
+        // Got an invalid separator char, reinjecting to the string
+        i = i - _self._fSep.length - 1;
+        if(i  < 0) {
+          string = _self._fSep.substr(0, -i) + string;
+          i = -1;
+        }
+        this._discardFSep = true;
+      }
+      _self._fSep = '';
       continue;
     }
+    // Detecting new lines start
+    if(!this._discardLn) {
+      matches = getSeparatorMatches(_self.options.linesep, _self._lnSep + curChar);
+      if(matches.length) {
+        _self._lnSep += curChar;
+        _self._parsingState |= CSVParser.STATE_LNSEP;
+        continue;
+      }
+    }
+    this._discardLn = false;
     // STATE_LNSEP : We are waiting for some more line separators chars
     if(_self._parsingState&CSVParser.STATE_LNSEP) {
-      matches = getSeparatorMatches(_self.options.linesep, _self._lnSep);
       _self._parsingState ^= _self._parsingState&(CSVParser.STATE_LNSEP|CSVParser.STATE_FSEP);
-      _self._lnSep = '';
-      if(matches.length) {
+      if(-1 !== _self.options.linesep.indexOf(_self._lnSep)) {
         // Got a valid new line char
         if('' != _self._currentField) {
           _self._currentRow.push(_self._currentField);
@@ -292,44 +334,19 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
           string = _self._lnSep.substr(0, -i) + string;
           i = -1;
         }
+        this._discardLn = true;
       }
-      continue;
-    }
-    // Detecting new field start
-    matches = getSeparatorMatches(_self.options.sep, _self._fSep + string[i]);
-    if(matches.length) {
-      _self._fSep += string[i];
-      _self._parsingState |= CSVParser.STATE_FSEP;
-      continue;
-    }
-    // STATE_FSEP : We are waiting for some more field separators chars
-    if(_self._parsingState&CSVParser.STATE_FSEP) {
-      matches = getSeparatorMatches(_self.options.sep, _self._fSep);
-      _self._parsingState ^= CSVParser.STATE_FSEP;
-      if(matches.length) {
-        // Got a valid separator char
-        _self._currentRow.push(_self._currentField);
-        _self._currentField = '';
-        i--;
-      } else {
-        // Got an invalid separator char, reinjecting to the string
-        i = i - _self._fSep.length - 1;
-        if(i  < 0) {
-          string = _self._fSep.substr(0, -i) + string;
-          i = -1;
-        }
-      }
-      _self._fSep = '';
+      _self._lnSep = '';
       continue;
     }
     // FIELD
     if(_self._parsingState&CSVParser.STATE_FIELD) {
-      _self._currentField += string[i];
+      _self._currentField += curChar;
       continue;
     }
     // LINE
-    if('\u0000' != string[i]) {
-      this.emit('error', new Error('Unexpected char "'+string[i]+'".'));
+    if('\u0000' != curChar) {
+      this.emit('error', new Error('Unexpected char "'+curChar+'".'));
     }
   }
   cb();
