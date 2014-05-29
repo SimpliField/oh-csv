@@ -346,9 +346,7 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
       continue;
     }
     // LINE
-    if('\u0000' != curChar) {
-      this.emit('error', new Error('Unexpected char "'+curChar+'".'));
-    }
+    this.emit('error', new Error('Unexpected char "'+curChar+'".'));
   }
   cb();
 };
