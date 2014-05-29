@@ -150,6 +150,37 @@ describe('csv parser', function() {
         parser.end();
     });
 
+    it('should work for csv when fields are given', function(done) {
+        var parser = new csv.Parser({
+          fields: ['id', 'label', 'description']
+        });
+        getStreamObjs(parser, function(objs) {
+          assert.deepEqual(objs, [{
+            id: 1,
+            label: 'test1',
+            description: 'another test1'
+          },{
+            id: 2,
+            label: 'test2',
+            description: 'another test2'
+          },{
+            id: 3,
+            label: 'test3',
+            description: 'another test3'
+          },{
+            id: 4,
+            label: 'test4',
+            description: 'another test4'
+          }]);
+          done();
+        });
+        parser.write('1,test1,another test1\r\n');
+        parser.write('2,test2,another test2\r\n');
+        parser.write('3,test3,another test3\r\n');
+        parser.write('4,test4,another test4\r\n');
+        parser.end();
+    });
+
     it('should work for csv with csv config and quotes', function(done) {
         var parser = new csv.Parser(csv.csvQuotOpts);
         getStreamObjs(parser, function(objs) {
@@ -190,16 +221,16 @@ describe('csv parser', function() {
         var parser = new csv.Parser(csv.csvRFCOpts);
         getStreamObjs(parser, function(objs) {
           assert.deepEqual(objs, [
-          //  [1, 'test1', 'an "other" test1'],
-          //  [2, 'test2', 'an "other" test2'],
-          //  [3, 'test3', 'an "other" test3'],
+            [1, 'test1', 'an "other" test1'],
+            [2, 'test2', 'an "other" test2'],
+            [3, 'test3', 'an "other" test3'],
             [4, 'test4', 'an "other" test4']
           ]);
           done();
         });
-        //parser.write('1,"test1","an ""other"" test1"\r\n');
-        //parser.write('2,"test2","an ""other"" test2"\r\n');
-        //parser.write('3,"test3","an ""other"" test3"\r\n');
+        parser.write('1,"test1","an ""other"" test1"\r\n');
+        parser.write('2,"test2","an ""other"" test2"\r\n');
+        parser.write('3,"test3","an ""other"" test3"\r\n');
         parser.write('4,"test4","an ""other"" test4"');
         parser.end();
     });

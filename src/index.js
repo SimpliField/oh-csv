@@ -266,13 +266,20 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
       _self._parsingState ^= _self._parsingState&(CSVParser.STATE_LNSEP|CSVParser.STATE_FSEP);
       _self._lnSep = '';
       if(matches.length) {
-        // Got a valid line char
+        // Got a valid new line char
         if('' != _self._currentField) {
           _self._currentRow.push(_self._currentField);
           _self._currentField = '';
         }
         if(_self._currentRow.length) {
-          _self.push(_self._currentRow);
+          if(_self.options.fields) {
+            _self.push(_self.options.fields.reduce(function(obj, field) {
+              obj[field] = _self._currentRow.shift();
+              return obj;
+            }, {}));
+          } else {
+            _self.push(_self._currentRow);
+          }
           _self._currentRow = [];
         }
         this.lineNum++;
