@@ -1,6 +1,8 @@
 # OH - CSV
 Simple and parametrable CSV/TSV parser and encoder.
 
+[![NPM version](https://badge.fury.io/js/oh-csv.png)](https://npmjs.org/package/oh-csv) [![Build status](https://secure.travis-ci.org/SimpliField/oh-csv.png)](https://travis-ci.org/SimpliField/oh-csv) [![Dependency Status](https://david-dm.org/SimpliField/oh-csv.png)](https://david-dm.org/SimpliField/oh-csv) [![devDependency Status](https://david-dm.org/SimpliField/oh-csv/dev-status.png)](https://david-dm.org/SimpliField/oh-csv#info=devDependencies) [![Coverage Status](https://coveralls.io/repos/SimpliField/oh-csv/badge.png?branch=master)](https://coveralls.io/r/SimpliField/oh-csv?branch=master) [![Code Climate](https://codeclimate.com/github/SimpliField/oh-csv.png)](https://codeclimate.com/github/SimpliField/oh-csv)
+
 ## Usage
 ```js
 var csv = require('oh-csv');
