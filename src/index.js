@@ -341,12 +341,7 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
       continue;
     }
     // FIELD
-    if(_self._parsingState&CSVParser.STATE_FIELD) {
-      _self._currentField += curChar;
-      continue;
-    }
-    // LINE
-    this.emit('error', new Error('Unexpected char "'+curChar+'".'));
+    _self._currentField += curChar;
   }
   cb();
 };
