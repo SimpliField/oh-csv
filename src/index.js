@@ -6,25 +6,27 @@ var escapeRegExpComponent = require('escape-regexp-component');
 var csvOpts = {
   sep: [','],
   esc: ['\\'],
-  quote: [''],
-  linesep: ['\r\n', '\n', '\r']
+  linesep: ['\r\n', '\n', '\r'],
+  toQuote: []
 };
 var csvQuotOpts = {
   sep: [','],
   linesep: ['\r\n', '\n', '\r'],
   quote: ['"'],
-  esc: ['\\']
+  toEsc: ['"'],
+  esc: ['\\'],
+  toQuote: [',', '\r\n', '\n', '\r']
 };
 var tsvOpts = {
   sep: ['\t'],
   linesep: ['\r\n', '\n', '\r'],
-  quote: [''],
   esc: ['\\']
 };
 var csvRFCOpts = {
   sep: [','],
   linesep: ['\r\n', '\n', '\r'],
   quote: ['"'],
+  toQuote: [',', '\r\n', '\n', '\r', '"'],
   esc: ['"'],
   toEsc: ['"']
 };
@@ -42,7 +44,7 @@ var csv = {
 // Options integrity
 function checkOptions(options) {
   options = options || {};
-  // Required
+  // Separators (required)
   if(options.sep && 'string' === typeof options.sep) {
     options.sep = [options.sep];
   } else {
@@ -60,22 +62,38 @@ function checkOptions(options) {
     throw Error('The option.sep argument is required.')
   }
   options.charsEncoding = options.charsEncoding || csvOpts.charsEncoding;
-  // Optionnal
-  if('string' === typeof options.esc) {
-    options.esc = [options.esc];
-  } else {
-    options.esc = options.esc || csvOpts.esc;
-  }
+  // Quotes (optionnal)
   if(options.quote && 'string' === typeof options.quote) {
     options.quote = [options.quote];
   } else {
     options.quote = options.quote || [];
   }
-  options.toEsc = (
-    options.toEsc ||
-    options.quote.concat(options.sep).concat(options.linesep)
-      .concat(options.esc)
-  ).filter(function(s) { return s; });
+  if('string' === typeof options.toQuote) {
+    options.toQuote = [options.toQuote];
+  }
+  if('undefined' === typeof options.toQuote && options.quote.length) {
+    options.toQuote = options.sep.concat(options.linesep).concat(options.quote)
+      .concat(options.esc);
+  } else {
+    options.toQuote = options.toQuote || [];
+  }
+  // Escape (optionnal)
+  if('string' === typeof options.esc) {
+    options.esc = [options.esc];
+  } else {
+    options.esc = options.esc || csvOpts.esc;
+  }
+  if('string' === typeof options.toEsc) {
+    options.toEsc = [options.toEsc];
+  }
+  if('undefined' === typeof options.toEsc && options.esc.length) {
+    options.toEsc = options.quote.concat(options.esc);
+    if(!options.quote.length) {
+      options.toEsc = options.toEsc.concat(options.sep).concat(options.linesep);
+    }
+  } else {
+    options.toEsc = options.toEsc || [];
+  }
   return options;
 }
 
@@ -389,6 +407,14 @@ function CSVEncoder(options) {
     'gm'
   );
 
+  // Build the quote search regular expression
+  if(this.options.toQuote.length) {
+    this._quoteRegExp = new RegExp(
+      '(' + this.options.toQuote.map(escapeRegExpComponent).join('|') + ')',
+      'gm'
+    );
+  }
+
 }
 
 // Inherit of transform stream
@@ -409,10 +435,15 @@ CSVEncoder.prototype._transform = function csvEncoderTransform(row, encoding, cb
   // Creating the chunk
   _self.push(new Buffer(
     row.map(function(field) {
-      return (_self.options.quote[0] || '') + (field+'').replace(
+      var needQuote = false;
+      if(_self.options.toQuote.length) {
+        _self._quoteRegExp.lastIndex = 0
+        needQuote = _self._quoteRegExp.test(field+'');
+      }
+      return (needQuote ? _self.options.quote[0] : '') + (field+'').replace(
         _self._escRegExp,
         _self.options.esc[0] + '$1'
-      ) + (_self.options.quote[0] || '');
+      ) + (needQuote ? _self.options.quote[0] : '');
     }).join(_self.options.sep[0]) + _self.options.linesep[0],
     encoding
   ));

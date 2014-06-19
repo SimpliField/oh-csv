@@ -453,21 +453,39 @@ describe('csv encoder', function() {
 
     describe('should work with the CSV RFC config', function() {
 
-      it('with this input', function(done) {
+      it('with fields containing quotes', function(done) {
         var encoder = new csv.Encoder(csv.csvRFCOpts);
         getStreamText(encoder, function(text) {
           assert.equal(text,
-            '"1","tu","""peux""","pas","test"\r\n' +
-            '"2","tu","""peux""","pas","test"\r\n' +
-            '"3","tu","""peux""","pas","test"\r\n' +
-            '"4","tu","""peux""","pas","test"\r\n'
+            '1,tu,"""peux""",pas,"te""st"\r\n' +
+            '2,tu,"""peux""",pas,"te""st"\r\n' +
+            '3,tu,"""peux""",pas,"te""st"\r\n' +
+            '4,tu,"""peux""",pas,"te""st"\r\n'
           );
           done();
         });
-        encoder.write([1, 'tu', '"peux"', 'pas', 'test']);
-        encoder.write([2, 'tu', '"peux"', 'pas', 'test']);
-        encoder.write([3, 'tu', '"peux"', 'pas', 'test']);
-        encoder.write([4, 'tu', '"peux"', 'pas', 'test']);
+        encoder.write([1, 'tu', '"peux"', 'pas', 'te"st']);
+        encoder.write([2, 'tu', '"peux"', 'pas', 'te"st']);
+        encoder.write([3, 'tu', '"peux"', 'pas', 'te"st']);
+        encoder.write([4, 'tu', '"peux"', 'pas', 'te"st']);
+        encoder.end();
+      });
+
+      it('with fields with new lines', function(done) {
+        var encoder = new csv.Encoder(csv.csvRFCOpts);
+        getStreamText(encoder, function(text) {
+          assert.equal(text,
+            '1,tu,"pe\r\nux","\r\npas\r\n",test\r\n' +
+            '2,tu,"pe\r\nux","\r\npas\r\n",test\r\n' +
+            '3,tu,"pe\r\nux","\r\npas\r\n",test\r\n' +
+            '4,tu,"pe\r\nux","\r\npas\r\n",test\r\n'
+          );
+          done();
+        });
+        encoder.write([1, 'tu', 'pe\r\nux', '\r\npas\r\n', 'test']);
+        encoder.write([2, 'tu', 'pe\r\nux', '\r\npas\r\n', 'test']);
+        encoder.write([3, 'tu', 'pe\r\nux', '\r\npas\r\n', 'test']);
+        encoder.write([4, 'tu', 'pe\r\nux', '\r\npas\r\n', 'test']);
         encoder.end();
       });
 
@@ -482,10 +500,10 @@ describe('csv encoder', function() {
         });
         getStreamText(encoder, function(text) {
           assert.equal(text,
-            '"1","\\"tu","peux","pas","test\\""\n' +
-            '"2","\\"tu","peux","pas","test\\""\n' +
-            '"3","\\"tu","peux","pas","test\\""\n' +
-            '"4","\\"tu","peux","pas","test\\""\n' 
+            '1,"\\"tu",peux,pas,"test\\""\n' +
+            '2,"\\"tu",peux,pas,"test\\""\n' +
+            '3,"\\"tu",peux,pas,"test\\""\n' +
+            '4,"\\"tu",peux,pas,"test\\""\n' 
           );
           done();
         });
@@ -501,14 +519,38 @@ describe('csv encoder', function() {
           quote: '~',
           sep: 'é',
           esc: '€',
+          toEsc: ['€', '~', 'é', 'à'],
           linesep: 'à'
         });
         getStreamText(encoder, function(text) {
           assert.equal(text,
-            '~1~é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' +
-            '~2~é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' +
-            '~3~é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' +
-            '~4~é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' 
+            '1é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' +
+            '2é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' +
+            '3é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' +
+            '4é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' 
+          );
+          done();
+        });
+        encoder.write([1, 't~u', 'péux', 'p€s', 'tàst']);
+        encoder.write([2, 't~u', 'péux', 'p€s', 'tàst']);
+        encoder.write([3, 't~u', 'péux', 'p€s', 'tàst']);
+        encoder.write([4, 't~u', 'péux', 'p€s', 'tàst']);
+        encoder.end();
+      });
+
+      it('introducing exotic chars', function(done) {
+        var encoder = new csv.Encoder({
+          quote: '~',
+          sep: 'é',
+          esc: '€',
+          linesep: 'à'
+        });
+        getStreamText(encoder, function(text) {
+          assert.equal(text,
+            '1é~t€~u~é~péux~é~p€€s~é~tàst~à' +
+            '2é~t€~u~é~péux~é~p€€s~é~tàst~à' +
+            '3é~t€~u~é~péux~é~p€€s~é~tàst~à' +
+            '4é~t€~u~é~péux~é~p€€s~é~tàst~à' 
           );
           done();
         });

@@ -14,7 +14,7 @@ var csv = require('oh-csv');
 var parser = new csv.Parser({
   sep: ',',
   linesep: ['\n', '\r', '\r\n'],
-  quotes: '"',
+  quote: '"',
   esc: '\\'
 });
 
@@ -30,7 +30,7 @@ var parser = new csv.Parser({
   fields: ['id', 'name', 'email'], // fields are required for this mode
   sep: ',',
   linesep: ['\n', '\r', '\r\n'],
-  quotes: '"',
+  quote: '"',
   esc: '\\'
 });
 
@@ -136,14 +136,21 @@ Default: `['"']`
 
 The strings used for quoting values. The first string is used to encode CSV.
 
+#### options.toQuote:Array
+Default: An array containing `options.sep`, `options.linesep` strings.
+
+If a field contains any occurence of the given strings, it must be quoted.
+
+
 #### options.esc:Array
 Default: `['\\']`
 
 The strings used for escaping special chars. The first string is used to encode CSV.
 
 #### options.toEsc:Array
-Default: An array containing `options.sep`, `options.linesep`, `options.quote`
- and `options.esc` strings.
+Default: If `options.esc` is empty, an empty array. If `options.quote` is empty,
+ an array containing `options.sep`, `options.linesep`, `options.quote` and
+ `options.esc` strings, otherwise, an array containing `options.quote` and
+ `options.esc`.
 
 The strings that must be escaped.
-
