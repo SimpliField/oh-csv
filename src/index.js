@@ -5,22 +5,29 @@ var escapeRegExpComponent = require('escape-regexp-component');
 // Predefined configuration
 var csvOpts = {
   sep: [','],
-  esc: ['\\'],
   linesep: ['\r\n', '\n', '\r'],
-  toQuote: []
+  esc: ['\\']
 };
 var csvQuotOpts = {
   sep: [','],
   linesep: ['\r\n', '\n', '\r'],
   quote: ['"'],
-  toEsc: ['"'],
+  toQuote: [',', '\r\n', '\n', '\r'],
   esc: ['\\'],
-  toQuote: [',', '\r\n', '\n', '\r']
+  toEsc: ['"']
 };
 var tsvOpts = {
   sep: ['\t'],
   linesep: ['\r\n', '\n', '\r'],
   esc: ['\\']
+};
+var tsvQuotOpts = {
+  sep: ['\t'],
+  linesep: ['\r\n', '\n', '\r'],
+  quote: ['"'],
+  toQuote: ['\t', '\r\n', '\n', '\r']
+  esc: ['"'],
+  toEsc: ['"']
 };
 var csvRFCOpts = {
   sep: [','],
@@ -61,7 +68,6 @@ function checkOptions(options) {
   if(!options.linesep.length) {
     throw Error('The option.sep argument is required.')
   }
-  options.charsEncoding = options.charsEncoding || csvOpts.charsEncoding;
   // Quotes (optionnal)
   if(options.quote && 'string' === typeof options.quote) {
     options.quote = [options.quote];
