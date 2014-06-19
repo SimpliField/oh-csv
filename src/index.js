@@ -25,7 +25,7 @@ var tsvQuotOpts = {
   sep: ['\t'],
   linesep: ['\r\n', '\n', '\r'],
   quote: ['"'],
-  toQuote: ['\t', '\r\n', '\n', '\r']
+  toQuote: ['\t', '\r\n', '\n', '\r'],
   esc: ['"'],
   toEsc: ['"']
 };
