@@ -89,12 +89,12 @@ parser.write('1,Nicolas Froidure,nicolas.froidure@simplifield.com');
 
 ### Excel compatible CSV
 We've added a simple wrapper to get a CSV stream compatible with Excel for
- both OSX and Windows from a csv.encoder instance :
+ both OSX and Windows from a csv.encoder instance:
 
 ```js
+  var encoder = new csv.Encoder(csv.tsvOpts);
 csv.wrapForExcel(encoder)
   .pipe(fs.createWriteStream('excel.csv'));
-
 ```
 
 ### Predefined options
