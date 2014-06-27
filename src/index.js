@@ -42,6 +42,7 @@ var csvRFCOpts = {
 var csv = {
   Parser: CSVParser,
   Encoder: CSVEncoder,
+  wrapForExcel: csvWrapForExcel,
   csvOpts: csvOpts,
   csvQuotOpts: csvQuotOpts,
   tsvOpts: tsvOpts,
@@ -455,6 +456,20 @@ CSVEncoder.prototype._transform = function csvEncoderTransform(row, encoding, cb
   ));
   cb();
 };
+
+// X-Platform Excel encoder
+function csvWrapForExcel(encoder) {
+  // Pipe the CSV encoder to the ucs2 converter
+  var converter = new Stream.Transform();
+  var csvStream = new Stream.PassThrough();
+  converter._transform = function(chunk, encoding, cb) {
+    this.push(new Buffer(chunk.toString(), 'ucs2'));
+    cb();
+  };
+  // Write the UCS2 BOM http://www.unicode.org/faq/utf_bom.html#bom1
+  csvStream.write(new Buffer([0xFF, 0xFE]));
+  return encoder.pipe(converter).pipe(csvStream);
+}
 
 module.exports = csv;
 

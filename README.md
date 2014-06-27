@@ -87,6 +87,16 @@ parser.write('1,Nicolas Froidure,nicolas.froidure@simplifield.com');
 // 1,nicolas froidure,nicolas.froidure@simplifield.com
 ```
 
+### Excel compatible CSV
+We've added a simple wrapper to get a CSV stream compatible with Excel for
+ both OSX and Windows from a csv.encoder instance :
+
+```js
+csv.wrapForExcel(encoder)
+  .pipe(fs.createWriteStream('excel.csv'));
+
+```
+
 ### Predefined options
 There are some CSV and TSV predefined objects in order to allow you tu just
  easily choose your format.

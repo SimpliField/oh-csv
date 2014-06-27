@@ -33,6 +33,21 @@ function getStreamText(stream, cb) {
     cb(text);
   });
 }
+function getStreamBuffer(stream, cb) {
+  var buf = new Buffer('');
+  stream.on('readable', function () {
+    var chunk;
+    do {
+      chunk = stream.read();
+      if(chunk) {
+        buf = Buffer.concat([buf, chunk]);
+      }
+    } while(chunk !== null);
+  });
+  stream.on('end', function () {
+    cb(buf);
+  });
+}
 
 describe('csv parser', function() {
 
@@ -582,3 +597,29 @@ describe('csv encoder', function() {
   });
 
 });
+
+describe('csv excel wrapper', function() {
+
+  it('should work as expected', function(done) {
+    var input = new Stream.PassThrough();
+    var output = csv.wrapForExcel(input);
+    getStreamBuffer(output, function(buf) {
+      assert.deepEqual(buf,
+        Buffer.concat([
+          new Buffer([0xFF, 0xFE]),
+          new Buffer(
+            '1,test1,another test1\r\n' +
+            '2,test2,another test2\r\n',
+            'ucs2'
+          )
+        ])
+      );
+      done();
+    });
+    input.write('1,test1,another test1\r\n');
+    input.write('2,test2,another test2\r\n');
+    input.end();
+  });
+  
+});
+
