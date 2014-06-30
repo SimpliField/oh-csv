@@ -147,6 +147,24 @@ describe('csv parser', function() {
         parser.end();
     });
 
+    it('should work for tsv with tsv config and complexer content', function(done) {
+        var parser = new csv.Parser(csv.tsvOpts);
+        getStreamObjs(parser, function(objs) {
+          assert.deepEqual(objs, [
+            [1, 'test1', 'multi\r\nline\r\ntest1'],
+            [2, 'test2', 'multi\r\nline\r\ntest1'],
+            [3, 'test3', 'multi\r\nline\r\ntest1'],
+            [4, 'test4', 'multi\r\nline\r\ntest1']
+          ]);
+          done();
+        });
+        parser.write('1\ttest1\t"multi\r\nline\r\ntest1"\r\n');
+        parser.write('2\ttest2\t"multi\r\nline\r\ntest1"\n');
+        parser.write('3\ttest3\t"multi\r\nline\r\ntest1"\r\n');
+        parser.write('4\ttest4\t"multi\r\nline\r\ntest1"\n');
+        parser.end();
+    });
+
     it('should work for csv with RFC csv config', function(done) {
         var parser = new csv.Parser(csv.csvRFCOpts);
         getStreamObjs(parser, function(objs) {
