@@ -19,7 +19,10 @@ var csvQuotOpts = {
 var tsvOpts = {
   sep: ['\t'],
   linesep: ['\r\n', '\n', '\r'],
-  esc: ['\\']
+  quote: ['"'],
+  toQuote: [',', '\r\n', '\n', '\r'],
+  esc: ['"'],
+  toEsc: ['"']
 };
 var tsvQuotOpts = {
   sep: ['\t'],

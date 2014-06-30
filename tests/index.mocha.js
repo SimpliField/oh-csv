@@ -450,10 +450,10 @@ describe('csv encoder', function() {
         var encoder = new csv.Encoder(csv.tsvOpts);
         getStreamText(encoder, function(text) {
           assert.equal(text,
-            '1\tte\\\tst1\\\n\t\\\r\nano\\\tther\\\r \\\ttest1\r\n' +
-            '2\tte\\\tst2\\\n\t\\\r\nano\\\tther\\\r \\\ttest2\r\n' +
-            '3\tte\\\tst3\\\n\t\\\r\nano\\\tther\\\r \\\ttest3\r\n' +
-            '4\tte\\\tst4\\\n\t\\\r\nano\\\tther\\\r \\\ttest4\r\n'
+            '1\t"te\tst1\n"\t"\r\nano\tther\r \ttest1"\r\n' +
+            '2\t"te\tst2\n"\t"\r\nano\tther\r \ttest2"\r\n' +
+            '3\t"te\tst3\n"\t"\r\nano\tther\r \ttest3"\r\n' +
+            '4\t"te\tst4\n"\t"\r\nano\tther\r \ttest4"\r\n'
           );
           done();
         });
