@@ -18,6 +18,13 @@ var parser = new csv.Parser({
   esc: '\\'
 });
 
+parser.on('readable', function() {
+  var row;
+  while(row = parser.read()) {
+    console.log(row);
+  }
+});
+
 parser.write('1,Nicolas Froidure,nicolas.froidure@simplifield.com');
 // [1, 'Nicolas Froidure', 'nicolas.froidure@simplifield.com']
 
@@ -32,6 +39,13 @@ var parser = new csv.Parser({
   linesep: ['\n', '\r', '\r\n'],
   quote: '"',
   esc: '\\'
+});
+
+parser.on('readable', function() {
+  var row;
+  while(row = parser.read()) {
+    console.log(row);
+  }
 });
 
 parser.write('1,Nicolas Froidure,nicolas.froidure@simplifield.com');
@@ -66,25 +80,28 @@ encoder.write({
 // '1,Nicolas Froidure,nicolas.froidure@simplifield.com'
 ```
 
-### Transforming rows
+### Transforming CSV on the fly
 
 No library needed, DIY !
 
 ```js
+var fs = require('fs');
+var parser = new csv.Parser();
+var encoder = new csv.Encoder();
+
 var Transform = require('stream').Transform;
-var transformer = new Transform({arrayMode: false});
+var transformer = new Transform({objectMode: true});
 transformer._transform = function(row, unused, cb) {
   row[name] = row[name].toLowerCase();
   this.push(row);
   cb();
 };
 
-parser
+fs.createReadStream('mycsv.csv')
+  .pipe(parser)
   .pipe(transformer)
-  .pipe(encoder);
-
-parser.write('1,Nicolas Froidure,nicolas.froidure@simplifield.com');
-// 1,nicolas froidure,nicolas.froidure@simplifield.com
+  .pipe(encoder)
+  .pipe(fs.createWriteStream('mycsv.new.csv'));
 ```
 
 ### Excel compatible CSV
@@ -100,7 +117,6 @@ csv.wrapForExcel(encoder)
 ### Predefined options
 There are some CSV and TSV predefined objects in order to allow you tu just
  easily choose your format.
-
 
 #### csv.csvOpts
 

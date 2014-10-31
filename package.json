@@ -1,6 +1,6 @@
 {
   "name": "oh-csv",
-  "version": "0.0.4",
+  "version": "1.0.0",
   "description": "Simple and parametrable CSV parser/encoder.",
   "main": "src/index.js",
   "scripts": {
