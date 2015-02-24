@@ -62,7 +62,7 @@ function checkOptions(options) {
     options.sep = options.sep || csvOpts.sep;
   }
   if(!options.sep.length) {
-    throw Error('The option.sep argument is required.')
+    throw new Error('The option.sep argument is required.');
   }
   if(options.linesep && 'string' === typeof options.linesep) {
     options.linesep = [options.linesep];
@@ -70,7 +70,7 @@ function checkOptions(options) {
     options.linesep = options.linesep || csvOpts.linesep;
   }
   if(!options.linesep.length) {
-    throw Error('The option.sep argument is required.')
+    throw new Error('The option.sep argument is required.');
   }
   // Quotes (optionnal)
   if(options.quote && 'string' === typeof options.quote) {
@@ -173,7 +173,7 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
     curChar = string[i];
     this.charNum++;
     // Looking for quoted fields start if quotes in options
-    if(_self.options.quote.length && '' == _self._currentField &&
+    if(_self.options.quote.length && '' === _self._currentField &&
       !_self._discardStartQuote) {
       matches = getSeparatorMatches(_self.options.quote, _self._startQuotState + curChar);
       if(matches.length) {
@@ -268,7 +268,7 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
       }
       if(_self._parsingState&CSVParser.STATE_QUOTE_END) {
         // Got a valid quote char
-        if(_self._startQuotState == _self._endQuotState) {
+        if(_self._startQuotState === _self._endQuotState) {
           _self._parsingState ^= CSVParser.STATE_QUOTE_END;
           _self._parsingState ^= CSVParser.STATE_FIELD_QUOTED;
           i--;
@@ -336,7 +336,7 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
       _self._parsingState ^= _self._parsingState&(CSVParser.STATE_LNSEP|CSVParser.STATE_FSEP);
       if(-1 !== _self.options.linesep.indexOf(_self._lnSep)) {
         // Got a valid new line char
-        if('' != _self._currentField) {
+        if('' !== _self._currentField) {
           _self._currentRow.push(_self._currentField);
           _self._currentField = '';
         }
@@ -447,7 +447,7 @@ CSVEncoder.prototype._transform = function csvEncoderTransform(row, encoding, cb
     row.map(function(field) {
       var needQuote = false;
       if(_self.options.toQuote.length) {
-        _self._quoteRegExp.lastIndex = 0
+        _self._quoteRegExp.lastIndex = 0;
         needQuote = _self._quoteRegExp.test(field+'');
       }
       return (needQuote ? _self.options.quote[0] : '') + (field+'').replace(
