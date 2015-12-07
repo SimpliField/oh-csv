@@ -292,7 +292,7 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
     }
     this._discardEndQuot = false;
     // Detecting new field start
-    if(!this._discardFSep) {
+    if(!this._discardFSep && ! (_self._parsingState&CSVParser.STATE_LNSEP)) {
       matches = getSeparatorMatches(_self.options.sep, _self._fSep + curChar);
       if(matches.length) {
         _self._fSep += curChar;

@@ -93,6 +93,24 @@ describe('csv parser', function() {
         parser.end();
     });
 
+    it('should work for csv with csv config with an empty first column', function(done) {
+        var parser = new csv.Parser(csv.csvOpts);
+        getStreamObjs(parser, function(objs) {
+          assert.deepEqual(objs, [
+            ['', 'test1', 'another test1'],
+            ['', 'test2', 'another test2'],
+            ['', 'test3', 'another test3'],
+            ['', 'test4', 'another test4']
+          ]);
+          done();
+        });
+        parser.write(',test1,another test1\r\n');
+        parser.write(',test2,another test2\r\n');
+        parser.write(',test3,another test3\r\n');
+        parser.write(',test4,another test4\r\n');
+        parser.end();
+    });
+
     it('should work for csv with one field per line', function(done) {
         var parser = new csv.Parser(csv.csvOpts);
         getStreamObjs(parser, function(objs) {
