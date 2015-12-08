@@ -1,7 +1,7 @@
 # OH - CSV
-Simple and parametrable CSV/TSV parser and encoder.
+Simple and highly configurable CSV/TSV parser and encoder.
 
-[![NPM version](https://badge.fury.io/js/oh-csv.png)](https://npmjs.org/package/oh-csv) [![Build status](https://secure.travis-ci.org/SimpliField/oh-csv.png)](https://travis-ci.org/SimpliField/oh-csv) [![Dependency Status](https://david-dm.org/SimpliField/oh-csv.png)](https://david-dm.org/SimpliField/oh-csv) [![devDependency Status](https://david-dm.org/SimpliField/oh-csv/dev-status.png)](https://david-dm.org/SimpliField/oh-csv#info=devDependencies) [![Coverage Status](https://coveralls.io/repos/SimpliField/oh-csv/badge.png?branch=master)](https://coveralls.io/r/SimpliField/oh-csv?branch=master) [![Code Climate](https://codeclimate.com/github/SimpliField/oh-csv.png)](https://codeclimate.com/github/SimpliField/oh-csv)
+[![NPM version](https://badge.fury.io/js/oh-csv.svg)](https://npmjs.org/package/oh-csv) [![Build status](https://secure.travis-ci.org/SimpliField/oh-csv.svg)](https://travis-ci.org/SimpliField/oh-csv) [![Dependency Status](https://david-dm.org/SimpliField/oh-csv.svg)](https://david-dm.org/SimpliField/oh-csv) [![devDependency Status](https://david-dm.org/SimpliField/oh-csv/dev-status.svg)](https://david-dm.org/SimpliField/oh-csv#info=devDependencies) [![Coverage Status](https://coveralls.io/repos/SimpliField/oh-csv/badge.svg?branch=master)](https://coveralls.io/r/SimpliField/oh-csv?branch=master) [![Code Climate](https://codeclimate.com/github/SimpliField/oh-csv.svg)](https://codeclimate.com/github/SimpliField/oh-csv)
 
 ## Usage
 ```js
@@ -115,8 +115,8 @@ csv.wrapForExcel(encoder)
 ```
 
 ### Predefined options
-There are some CSV and TSV predefined objects in order to allow you tu just
- easily choose your format.
+There are some CSV and TSV predefined objects in order to allow you to choose
+ your format in a simpler manner.
 
 #### csv.csvOpts
 
@@ -151,6 +151,7 @@ The options object is meant to be usable either with the Parser and the Encoder.
 Default: `[',']`
 
 The strings used for separating values. The first string is used to encode CSV.
+ Separators can have several chars (useless thus essential).
 
 #### options.linesep:Array
 Default: `['\r\n', '\r', '\n']`
@@ -165,8 +166,7 @@ The strings used for quoting values. The first string is used to encode CSV.
 #### options.toQuote:Array
 Default: An array containing `options.sep`, `options.linesep` strings.
 
-If a field contains any occurence of the given strings, it must be quoted.
-
+If a field contains any occurrence of the given strings, it must be quoted.
 
 #### options.esc:Array
 Default: `['\\']`
