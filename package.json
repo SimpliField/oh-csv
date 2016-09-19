@@ -25,7 +25,7 @@
     "url": "https://github.com/SimpliField/oh-csv/issues"
   },
   "devDependencies": {
-    "coveralls": "^2.11.4",
+    "coveralls": "^2.11.14",
     "istanbul": "^0.4.1",
     "mocha": "^3.0.2",
     "mocha-lcov-reporter": "^1.0.0"
