@@ -78,15 +78,6 @@ function checkOptions(options) {
   } else {
     options.quote = options.quote || [];
   }
-  if('string' === typeof options.toQuote) {
-    options.toQuote = [options.toQuote];
-  }
-  if('undefined' === typeof options.toQuote && options.quote.length) {
-    options.toQuote = options.sep.concat(options.linesep).concat(options.quote)
-      .concat(options.esc);
-  } else {
-    options.toQuote = options.toQuote || [];
-  }
   // Escape (optionnal)
   if('string' === typeof options.esc) {
     options.esc = [options.esc];
@@ -103,6 +94,16 @@ function checkOptions(options) {
     }
   } else {
     options.toEsc = options.toEsc || [];
+  }
+  // ToQuote
+  if('string' === typeof options.toQuote) {
+    options.toQuote = [options.toQuote];
+  }
+  if('undefined' === typeof options.toQuote && options.quote.length) {
+    options.toQuote = options.sep.concat(options.linesep).concat(options.quote)
+      .concat(options.esc);
+  } else {
+    options.toQuote = options.toQuote || [];
   }
   return options;
 }
