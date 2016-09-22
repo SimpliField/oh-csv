@@ -1,6 +1,6 @@
 var Stream = require('readable-stream');
 var util = require('util');
-var escapeRegExpComponent = require('escape-regexp-component');
+var escapeRegExpComponent = require('escape-string-regexp');
 
 // Predefined configuration
 var csvOpts = {
