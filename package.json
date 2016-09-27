@@ -31,7 +31,7 @@
     "mocha-lcov-reporter": "^1.0.0"
   },
   "dependencies": {
-    "escape-regexp-component": "^1.0.2",
+    "escape-string-regexp": "^1.0.5",
     "readable-stream": "^2.0.4"
   }
 }
