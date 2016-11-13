@@ -459,6 +459,24 @@ describe('csv encoder', function() {
         encoder.end();
       });
 
+      it('with only 2 empty columns', function(done) {
+        var encoder = new csv.Encoder(csv.csvOpts);
+        getStreamText(encoder, function(text) {
+          assert.equal(text,
+            ',\r\n' +
+            ',\r\n' +
+            ',\r\n' +
+            ',\r\n'
+          );
+          done();
+        });
+        encoder.write(['', '']);
+        encoder.write(['', '']);
+        encoder.write(['', '']);
+        encoder.write(['', '']);
+        encoder.end();
+      });
+
       it('only one field per line', function(done) {
         var encoder = new csv.Encoder(csv.csvOpts);
         getStreamText(encoder, function(text) {
