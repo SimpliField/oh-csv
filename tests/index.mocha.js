@@ -129,6 +129,24 @@ describe('csv parser', function() {
         parser.end();
     });
 
+    it('should work for csv with csv config with only 2 empty columns', function(done) {
+        var parser = new csv.Parser(csv.csvOpts);
+        getStreamObjs(parser, function(objs) {
+          assert.deepEqual(objs, [
+            ['', ''],
+            ['', ''],
+            ['', ''],
+            ['', '']
+          ]);
+          done();
+        });
+        parser.write(',\r\n');
+        parser.write(',\r\n');
+        parser.write(',\r\n');
+        parser.write(',\r\n');
+        parser.end();
+    });
+
     it('should work for csv with one field per line', function(done) {
         var parser = new csv.Parser(csv.csvOpts);
         getStreamObjs(parser, function(objs) {
