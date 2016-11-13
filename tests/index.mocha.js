@@ -111,6 +111,24 @@ describe('csv parser', function() {
         parser.end();
     });
 
+    it('should work for csv with csv config with an empty last column', function(done) {
+        var parser = new csv.Parser(csv.csvOpts);
+        getStreamObjs(parser, function(objs) {
+          assert.deepEqual(objs, [
+            [1, 'test1', ''],
+            [2, 'test2', ''],
+            [3, 'test3', ''],
+            [4, 'test4', '']
+          ]);
+          done();
+        });
+        parser.write('1,test1,\r\n');
+        parser.write('2,test2,\r\n');
+        parser.write('3,test3,\r\n');
+        parser.write('4,test4,\r\n');
+        parser.end();
+    });
+
     it('should work for csv with one field per line', function(done) {
         var parser = new csv.Parser(csv.csvOpts);
         getStreamObjs(parser, function(objs) {
@@ -402,6 +420,24 @@ describe('csv encoder', function() {
         encoder.write(['', 'test2', 'another test2']);
         encoder.write(['', 'test3', 'another test3']);
         encoder.write(['', 'test4', 'another test4']);
+        encoder.end();
+      });
+
+      it('with an empty last column', function(done) {
+        var encoder = new csv.Encoder(csv.csvOpts);
+        getStreamText(encoder, function(text) {
+          assert.equal(text,
+            '1,test1,\r\n' +
+            '2,test2,\r\n' +
+            '3,test3,\r\n' +
+            '4,test4,\r\n'
+          );
+          done();
+        });
+        encoder.write([1, 'test1', '']);
+        encoder.write([2, 'test2', '']);
+        encoder.write([3, 'test3', '']);
+        encoder.write([4, 'test4', '']);
         encoder.end();
       });
 
