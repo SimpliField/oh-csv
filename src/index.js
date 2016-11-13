@@ -337,7 +337,7 @@ CSVParser.prototype._transform = function csvParserTransform(chunk, encoding, cb
       _self._parsingState ^= _self._parsingState&(CSVParser.STATE_LNSEP|CSVParser.STATE_FSEP);
       if(-1 !== _self.options.linesep.indexOf(_self._lnSep)) {
         // Got a valid new line char
-        if('' !== _self._currentField) {
+        if('' !== _self._currentField || 0 < _self._currentRow.length) {
           _self._currentRow.push(_self._currentField);
           _self._currentField = '';
         }
