@@ -387,6 +387,24 @@ describe('csv encoder', function() {
         encoder.end();
       });
 
+      it('with an empty first column', function(done) {
+        var encoder = new csv.Encoder(csv.csvOpts);
+        getStreamText(encoder, function(text) {
+          assert.equal(text,
+            ',test1,another test1\r\n' +
+            ',test2,another test2\r\n' +
+            ',test3,another test3\r\n' +
+            ',test4,another test4\r\n'
+          );
+          done();
+        });
+        encoder.write(['', 'test1', 'another test1']);
+        encoder.write(['', 'test2', 'another test2']);
+        encoder.write(['', 'test3', 'another test3']);
+        encoder.write(['', 'test4', 'another test4']);
+        encoder.end();
+      });
+
       it('only one field per line', function(done) {
         var encoder = new csv.Encoder(csv.csvOpts);
         getStreamText(encoder, function(text) {
@@ -554,7 +572,7 @@ describe('csv encoder', function() {
             '1,"\\"tu",peux,pas,"test\\""\n' +
             '2,"\\"tu",peux,pas,"test\\""\n' +
             '3,"\\"tu",peux,pas,"test\\""\n' +
-            '4,"\\"tu",peux,pas,"test\\""\n' 
+            '4,"\\"tu",peux,pas,"test\\""\n'
           );
           done();
         });
@@ -578,7 +596,7 @@ describe('csv encoder', function() {
             '1é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' +
             '2é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' +
             '3é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' +
-            '4é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' 
+            '4é~t€~u~é~p€éux~é~p€€s~é~t€àst~à'
           );
           done();
         });
@@ -601,7 +619,7 @@ describe('csv encoder', function() {
             '1é~t€~u~é~péux~é~p€€s~é~tàst~à' +
             '2é~t€~u~é~péux~é~p€€s~é~tàst~à' +
             '3é~t€~u~é~péux~é~p€€s~é~tàst~à' +
-            '4é~t€~u~é~péux~é~p€€s~é~tàst~à' 
+            '4é~t€~u~é~péux~é~p€€s~é~tàst~à'
           );
           done();
         });
@@ -656,6 +674,6 @@ describe('csv excel wrapper', function() {
     input.write('2,test2,another test2\r\n');
     input.end();
   });
-  
+
 });
 
