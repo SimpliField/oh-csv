@@ -111,6 +111,42 @@ describe('csv parser', function() {
         parser.end();
     });
 
+    it('should work for csv with csv config with an empty last column', function(done) {
+        var parser = new csv.Parser(csv.csvOpts);
+        getStreamObjs(parser, function(objs) {
+          assert.deepEqual(objs, [
+            [1, 'test1', ''],
+            [2, 'test2', ''],
+            [3, 'test3', ''],
+            [4, 'test4', '']
+          ]);
+          done();
+        });
+        parser.write('1,test1,\r\n');
+        parser.write('2,test2,\r\n');
+        parser.write('3,test3,\r\n');
+        parser.write('4,test4,\r\n');
+        parser.end();
+    });
+
+    it('should work for csv with csv config with only 2 empty columns', function(done) {
+        var parser = new csv.Parser(csv.csvOpts);
+        getStreamObjs(parser, function(objs) {
+          assert.deepEqual(objs, [
+            ['', ''],
+            ['', ''],
+            ['', ''],
+            ['', '']
+          ]);
+          done();
+        });
+        parser.write(',\r\n');
+        parser.write(',\r\n');
+        parser.write(',\r\n');
+        parser.write(',\r\n');
+        parser.end();
+    });
+
     it('should work for csv with one field per line', function(done) {
         var parser = new csv.Parser(csv.csvOpts);
         getStreamObjs(parser, function(objs) {
@@ -387,6 +423,60 @@ describe('csv encoder', function() {
         encoder.end();
       });
 
+      it('with an empty first column', function(done) {
+        var encoder = new csv.Encoder(csv.csvOpts);
+        getStreamText(encoder, function(text) {
+          assert.equal(text,
+            ',test1,another test1\r\n' +
+            ',test2,another test2\r\n' +
+            ',test3,another test3\r\n' +
+            ',test4,another test4\r\n'
+          );
+          done();
+        });
+        encoder.write(['', 'test1', 'another test1']);
+        encoder.write(['', 'test2', 'another test2']);
+        encoder.write(['', 'test3', 'another test3']);
+        encoder.write(['', 'test4', 'another test4']);
+        encoder.end();
+      });
+
+      it('with an empty last column', function(done) {
+        var encoder = new csv.Encoder(csv.csvOpts);
+        getStreamText(encoder, function(text) {
+          assert.equal(text,
+            '1,test1,\r\n' +
+            '2,test2,\r\n' +
+            '3,test3,\r\n' +
+            '4,test4,\r\n'
+          );
+          done();
+        });
+        encoder.write([1, 'test1', '']);
+        encoder.write([2, 'test2', '']);
+        encoder.write([3, 'test3', '']);
+        encoder.write([4, 'test4', '']);
+        encoder.end();
+      });
+
+      it('with only 2 empty columns', function(done) {
+        var encoder = new csv.Encoder(csv.csvOpts);
+        getStreamText(encoder, function(text) {
+          assert.equal(text,
+            ',\r\n' +
+            ',\r\n' +
+            ',\r\n' +
+            ',\r\n'
+          );
+          done();
+        });
+        encoder.write(['', '']);
+        encoder.write(['', '']);
+        encoder.write(['', '']);
+        encoder.write(['', '']);
+        encoder.end();
+      });
+
       it('only one field per line', function(done) {
         var encoder = new csv.Encoder(csv.csvOpts);
         getStreamText(encoder, function(text) {
@@ -554,7 +644,7 @@ describe('csv encoder', function() {
             '1,"\\"tu",peux,pas,"test\\""\n' +
             '2,"\\"tu",peux,pas,"test\\""\n' +
             '3,"\\"tu",peux,pas,"test\\""\n' +
-            '4,"\\"tu",peux,pas,"test\\""\n' 
+            '4,"\\"tu",peux,pas,"test\\""\n'
           );
           done();
         });
@@ -578,7 +668,7 @@ describe('csv encoder', function() {
             '1é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' +
             '2é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' +
             '3é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' +
-            '4é~t€~u~é~p€éux~é~p€€s~é~t€àst~à' 
+            '4é~t€~u~é~p€éux~é~p€€s~é~t€àst~à'
           );
           done();
         });
@@ -601,7 +691,7 @@ describe('csv encoder', function() {
             '1é~t€~u~é~péux~é~p€€s~é~tàst~à' +
             '2é~t€~u~é~péux~é~p€€s~é~tàst~à' +
             '3é~t€~u~é~péux~é~p€€s~é~tàst~à' +
-            '4é~t€~u~é~péux~é~p€€s~é~tàst~à' 
+            '4é~t€~u~é~péux~é~p€€s~é~tàst~à'
           );
           done();
         });
@@ -656,6 +746,6 @@ describe('csv excel wrapper', function() {
     input.write('2,test2,another test2\r\n');
     input.end();
   });
-  
+
 });
 
